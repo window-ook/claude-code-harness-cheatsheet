@@ -17,6 +17,10 @@ export type Scope = 'user' | 'project';
 export type Kind = 'skills' | 'commands' | 'agents';
 export type Source = 'self' | 'plugin';
 
+export type HarnessTriggers = {
+  keywords?: string[];
+};
+
 export type HarnessItem = {
   name: string;
   description: string;
@@ -27,6 +31,9 @@ export type HarnessItem = {
   filePath: string;
   kind: Kind;
   scope: Scope;
+  author?: string;
+  relates?: string[];
+  triggers?: HarnessTriggers;
 };
 
 export type Bucket = `${Scope}.${Kind}`;
@@ -91,6 +98,32 @@ function firstLine(text: string): string {
   return idx === -1 ? trimmed : trimmed.slice(0, idx).trim();
 }
 
+function extractAuthor(fm: Record<string, unknown>): string | undefined {
+  const raw = fm.author;
+  if (typeof raw !== 'string') return undefined;
+  const trimmed = raw.trim();
+  return trimmed ? trimmed : undefined;
+}
+
+function extractStringArray(value: unknown): string[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const out: string[] = [];
+  for (const entry of value) {
+    if (typeof entry !== 'string') continue;
+    const trimmed = entry.trim();
+    if (trimmed) out.push(trimmed);
+  }
+  return out.length > 0 ? out : undefined;
+}
+
+function extractTriggers(fm: Record<string, unknown>): HarnessTriggers | undefined {
+  const raw = fm.triggers;
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return undefined;
+  const keywords = extractStringArray((raw as Record<string, unknown>).keywords);
+  if (!keywords) return undefined;
+  return { keywords };
+}
+
 function deriveDescriptionFromBody(body: string): string {
   if (!body) return '';
   const lines = body.split('\n');
@@ -135,6 +168,9 @@ async function parseItem(
     const description = fmDescription || deriveDescriptionFromBody(parsed.content ?? '');
     const namespace = deriveNamespace(filePath, kindDir);
     const isSubAsset = !isPrimaryNamed && namespace !== SINGLE_FILE_NAMESPACE;
+    const author = extractAuthor(fm);
+    const relates = extractStringArray(fm.relates);
+    const triggers = extractTriggers(fm);
     return {
       name,
       description,
@@ -145,6 +181,9 @@ async function parseItem(
       filePath,
       kind,
       scope,
+      ...(author ? { author } : {}),
+      ...(relates ? { relates } : {}),
+      ...(triggers ? { triggers } : {}),
     };
   } catch {
     return null;

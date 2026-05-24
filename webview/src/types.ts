@@ -4,6 +4,10 @@ export type Bucket = `${Scope}.${Kind}`;
 export type Source = 'self' | 'plugin';
 export type Theme = 'dark' | 'light';
 
+export type HarnessTriggers = {
+  keywords?: string[];
+};
+
 export type HarnessItem = {
   name: string;
   description: string;
@@ -14,6 +18,9 @@ export type HarnessItem = {
   filePath?: string;
   kind?: Kind;
   scope?: Scope;
+  author?: string;
+  relates?: string[];
+  triggers?: HarnessTriggers;
 };
 
 export type HarnessData = {
@@ -50,6 +57,12 @@ export function matchesQuery(item: HarnessItem, q: string): boolean {
   if (item.description.toLowerCase().includes(needle)) return true;
   if (item.namespace.toLowerCase().includes(needle)) return true;
   if (item.pluginName && item.pluginName.toLowerCase().includes(needle)) return true;
+  if (item.author && item.author.toLowerCase().includes(needle)) return true;
+  if (item.triggers?.keywords) {
+    for (const kw of item.triggers.keywords) {
+      if (kw.toLowerCase().includes(needle)) return true;
+    }
+  }
   return false;
 }
 
@@ -99,9 +112,21 @@ export function sourceGroupIdFor(item: Pick<HarnessItem, 'source' | 'pluginName'
   return item.source === 'self' ? 'self' : `plugin:${item.pluginName ?? ''}`;
 }
 
+export function authorGroupIdFor(item: Pick<HarnessItem, 'author'>): SourceGroupId | null {
+  if (!item.author) return null;
+  return `author:${item.author}`;
+}
+
 export function sourceGroupLabel(id: SourceGroupId): string {
-  if (id === 'self') return 'self';
+  if (id === 'self') return '직접';
+  if (id.startsWith('author:')) return id.slice('author:'.length);
   return id.replace(/^plugin:/, '');
+}
+
+export function sourceGroupKind(id: SourceGroupId): 'self' | 'plugin' | 'author' {
+  if (id === 'self') return 'self';
+  if (id.startsWith('author:')) return 'author';
+  return 'plugin';
 }
 
 export function groupKeyFor(item: { source: Source; pluginName?: string; namespace: string }): GroupKey {
