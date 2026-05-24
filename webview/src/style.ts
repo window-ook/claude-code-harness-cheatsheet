@@ -191,6 +191,83 @@ export const cssObj = {
     padding: 0 1px;
   `,
 
+  logo: css`
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    object-fit: contain;
+    flex-shrink: 0;
+  `,
+
+  cellDimmed: css`
+    opacity: 0.35;
+    filter: grayscale(0.4);
+    transition: opacity 0.2s ease, filter 0.2s ease;
+  `,
+
+  groupHeaderClickable: (t: Tokens) => css`
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.1s ease;
+    margin: 0 -4px;
+    padding-left: 4px;
+    padding-right: 4px;
+    border-radius: 4px;
+    &:hover {
+      background: ${t.cellHeaderBg};
+    }
+  `,
+
+  groupBodyHidden: css`
+    display: none;
+  `,
+
+  groupChevron: (t: Tokens) => css`
+    color: ${t.textTertiary};
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+  `,
+
+  groupCount: (t: Tokens) => css`
+    font-size: 11px;
+    color: ${t.textTertiary};
+    font-weight: 500;
+    margin-left: auto;
+  `,
+
+  searchSummary: (t: Tokens) => css`
+    font-size: 12px;
+    color: ${t.textSecondary};
+    white-space: nowrap;
+  `,
+
+  searchSummaryWarn: (t: Tokens) => css`
+    font-size: 12px;
+    color: ${t.pluginAccent};
+    font-weight: 600;
+    white-space: nowrap;
+  `,
+
+  searchSummaryHit: (t: Tokens) => css`
+    font-size: 12px;
+    color: ${t.selfAccent};
+    font-weight: 600;
+    white-space: nowrap;
+  `,
+
+  itemFlash: (t: Tokens) => css`
+    animation: cheatsheet-flash 1.4s ease-out;
+    @keyframes cheatsheet-flash {
+      0% {
+        background: ${t.selfAccent}55;
+      }
+      100% {
+        background: transparent;
+      }
+    }
+  `,
+
   matrix: css`
     flex: 1;
     display: grid;
