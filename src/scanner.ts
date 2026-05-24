@@ -67,13 +67,38 @@ async function pathExists(p: string): Promise<boolean> {
 async function listMarkdownFiles(dir: string): Promise<string[]> {
   if (!(await pathExists(dir))) return [];
   const out: string[] = [];
+  const visited = new Set<string>();
   async function walk(current: string) {
-    const entries = await fs.readdir(current, { withFileTypes: true });
+    let realPath: string;
+    try {
+      realPath = await fs.realpath(current);
+    } catch {
+      return;
+    }
+    if (visited.has(realPath)) return;
+    visited.add(realPath);
+    let entries;
+    try {
+      entries = await fs.readdir(current, { withFileTypes: true });
+    } catch {
+      return;
+    }
     for (const entry of entries) {
       const full = path.join(current, entry.name);
-      if (entry.isDirectory()) {
+      let isDir = entry.isDirectory();
+      let isFile = entry.isFile();
+      if (entry.isSymbolicLink()) {
+        try {
+          const stat = await fs.stat(full);
+          isDir = stat.isDirectory();
+          isFile = stat.isFile();
+        } catch {
+          continue;
+        }
+      }
+      if (isDir) {
         await walk(full);
-      } else if (entry.isFile() && entry.name.endsWith('.md')) {
+      } else if (isFile && entry.name.endsWith('.md')) {
         out.push(full);
       }
     }
