@@ -301,10 +301,9 @@ export const cssObj = {
   `,
 
   cellHeaderDot: (t: Tokens) => css`
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: ${t.textTertiary};
+    color: ${t.textTertiary};
+    display: inline-flex;
+    align-items: center;
     flex-shrink: 0;
   `,
 
