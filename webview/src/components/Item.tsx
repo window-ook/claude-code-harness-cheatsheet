@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { cssObj, tokensFor } from '../style';
 import { Highlight } from './Highlight';
 import type { HarnessItem, Theme } from '../types';
@@ -6,21 +7,39 @@ type Props = {
   item: HarnessItem;
   theme: Theme;
   query?: string;
+  isFirstMatch?: boolean;
   onOpen?: (filePath: string) => void;
 };
 
-export function Item({ item, theme, query = '', onOpen }: Props) {
+export function Item({ item, theme, query = '', isFirstMatch = false, onOpen }: Props) {
   const t = tokensFor(theme);
   const isSub = !!item.isSubAsset;
   const clickable = !!item.filePath && !!onOpen;
+  const ref = useRef<HTMLDivElement>(null);
+  const [flashing, setFlashing] = useState(false);
+
+  useEffect(() => {
+    if (!isFirstMatch) {
+      setFlashing(false);
+      return;
+    }
+    ref.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    setFlashing(true);
+    const timer = window.setTimeout(() => setFlashing(false), 1400);
+    return () => window.clearTimeout(timer);
+  }, [isFirstMatch, query]);
+
   const handleClick = () => {
     if (clickable && item.filePath && onOpen) onOpen(item.filePath);
   };
+
   return (
     <div
+      ref={ref}
       css={[
         isSub ? cssObj.itemSub : cssObj.item,
         clickable && cssObj.itemClickable(t),
+        flashing && cssObj.itemFlash(t),
       ]}
       onClick={clickable ? handleClick : undefined}
       role={clickable ? 'button' : undefined}
