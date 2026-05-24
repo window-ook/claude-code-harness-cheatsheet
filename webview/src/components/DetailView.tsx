@@ -8,6 +8,7 @@ import {
   SCOPE_LABEL,
   isSingleFileNamespace,
   type HarnessItem,
+  type RelatesIndex,
   type Theme,
 } from '../types';
 
@@ -27,6 +28,9 @@ type Props = {
   error: string | null;
   onBack: () => void;
   onOpen: (filePath: string) => void;
+  relatesIndex: RelatesIndex;
+  itemBySlug: Map<string, HarnessItem>;
+  onSelectRelated: (item: HarnessItem) => void;
 };
 
 function asString(v: unknown): string | undefined {
@@ -44,7 +48,18 @@ function asBool(v: unknown): boolean | undefined {
   return undefined;
 }
 
-export function DetailView({ item, theme, files, loading, error, onBack, onOpen }: Props) {
+export function DetailView({
+  item,
+  theme,
+  files,
+  loading,
+  error,
+  onBack,
+  onOpen,
+  relatesIndex,
+  itemBySlug,
+  onSelectRelated,
+}: Props) {
   const t = tokensFor(theme);
   const [activeIdx, setActiveIdx] = useState(0);
 
@@ -57,17 +72,27 @@ export function DetailView({ item, theme, files, loading, error, onBack, onOpen 
   const kind = item.kind;
   const displayName = asString(fm.name) ?? item.name;
 
-  const argumentHint = asString(fm['argument-hint']) ?? asString(fm.argumentHint);
-  const argumentTokens = argumentHint
-    ? argumentHint
-        .split(/[,·•]+|\s{2,}/)
-        .map((s) => s.trim())
-        .filter(Boolean)
-    : [];
+  const triggerKeywords = (() => {
+    const triggers = fm.triggers;
+    if (!triggers || typeof triggers !== 'object' || Array.isArray(triggers)) return item.triggers?.keywords ?? [];
+    const kw = (triggers as Record<string, unknown>).keywords;
+    if (!Array.isArray(kw)) return item.triggers?.keywords ?? [];
+    return kw.filter((s): s is string => typeof s === 'string' && s.trim().length > 0);
+  })();
 
   const disableModelInvocation = asBool(fm['disable-model-invocation']) ?? asBool(fm.disableModelInvocation);
   const isAgent = kind === 'agents';
   const isSelf = item.source === 'self';
+
+  const relatedSlugs = (() => {
+    const set = relatesIndex.get(item.name);
+    if (!set) return [] as string[];
+    return Array.from(set).sort();
+  })();
+  const relatedItems = relatedSlugs
+    .map((slug) => ({ slug, item: itemBySlug.get(slug) }))
+    .filter((r): r is { slug: string; item: HarnessItem } => !!r.item);
+  const orphanSlugs = relatedSlugs.filter((slug) => !itemBySlug.has(slug));
 
   return (
     <div css={cssObj.detailRoot(t)}>
@@ -79,11 +104,14 @@ export function DetailView({ item, theme, files, loading, error, onBack, onOpen 
 
       <div css={cssObj.detailHeader(t)}>
         <div css={cssObj.detailTitle(t)}>{displayName}</div>
+        {item.author ? (
+          <div css={cssObj.detailAuthorLine(t)}>생성자: {item.author}</div>
+        ) : null}
         <div css={cssObj.detailBadges}>
           <span css={cssObj.detailBadge(t, 'scope')}>{SCOPE_LABEL[item.scope ?? 'user']}</span>
           <span css={cssObj.detailBadge(t, 'kind')}>{kind ? KIND_LABEL[kind] : '-'}</span>
           {isSelf ? (
-            <span css={cssObj.detailBadge(t, 'self')}>self</span>
+            <span css={cssObj.detailBadge(t, 'self')}>직접</span>
           ) : (
             <span css={cssObj.detailBadge(t, 'plugin')}>{item.pluginName ?? 'plugin'}</span>
           )}
@@ -126,17 +154,41 @@ export function DetailView({ item, theme, files, loading, error, onBack, onOpen 
           </div>
         )}
 
-        {argumentTokens.length > 0 ? (
+        {triggerKeywords.length > 0 ? (
           <div css={cssObj.detailTriggerRow(t)}>
-            <span css={cssObj.detailTriggerLabel(t)}>인자</span>
-            {argumentTokens.map((tok, i) => (
-              <span key={`${tok}-${i}`} css={cssObj.detailTriggerValue(t)}>
-                {tok}
+            <span css={cssObj.detailTriggerLabel(t)}>키워드</span>
+            {triggerKeywords.map((kw, i) => (
+              <span key={`${kw}-${i}`} css={cssObj.detailTriggerValue(t)}>
+                {kw}
               </span>
             ))}
           </div>
         ) : null}
       </div>
+
+      {relatedItems.length > 0 || orphanSlugs.length > 0 ? (
+        <div css={cssObj.detailRelatedCard(t)}>
+          <div css={cssObj.detailRelatedTitle(t)}>관련 스킬</div>
+          <div css={cssObj.detailRelatedChips(t)}>
+            {relatedItems.map(({ slug, item: rel }) => (
+              <button
+                key={slug}
+                type="button"
+                css={cssObj.detailRelatedChip(t, rel.author)}
+                onClick={() => onSelectRelated(rel)}
+                title={rel.description}
+              >
+                {rel.name}
+              </button>
+            ))}
+            {orphanSlugs.map((slug) => (
+              <span key={slug} css={cssObj.detailRelatedOrphan(t)} title="대상 스킬을 찾지 못했습니다">
+                {slug}
+              </span>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       <div css={cssObj.detailContentCard(t)}>
         {loading ? (

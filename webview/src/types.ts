@@ -122,6 +122,37 @@ export function authorLabel(id: string): string {
   return id === AUTHOR_NONE_ID ? '작성자 없음' : id;
 }
 
+export type RelatesIndex = Map<string, Set<string>>;
+
+export function buildRelatesIndex(items: HarnessItem[]): RelatesIndex {
+  const index: RelatesIndex = new Map();
+  const add = (a: string, b: string) => {
+    if (!a || !b || a === b) return;
+    let set = index.get(a);
+    if (!set) {
+      set = new Set();
+      index.set(a, set);
+    }
+    set.add(b);
+  };
+  for (const item of items) {
+    if (!item.relates) continue;
+    for (const target of item.relates) {
+      add(item.name, target);
+      add(target, item.name);
+    }
+  }
+  return index;
+}
+
+export function buildItemBySlug(items: HarnessItem[]): Map<string, HarnessItem> {
+  const map = new Map<string, HarnessItem>();
+  for (const item of items) {
+    if (!map.has(item.name)) map.set(item.name, item);
+  }
+  return map;
+}
+
 export function sourceGroupLabel(id: SourceGroupId): string {
   if (id === 'self') return '직접';
   if (id.startsWith('author:')) return id.slice('author:'.length);

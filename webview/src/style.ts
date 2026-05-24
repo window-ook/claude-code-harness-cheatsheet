@@ -44,6 +44,29 @@ export function tokensFor(theme: Theme): Tokens {
   return theme === 'light' ? LIGHT : DARK;
 }
 
+const AUTHOR_ACCENT_DARK: Record<string, string> = {
+  'superpowers(obra)': '#FCA5A5',
+  'impeccable(pbakaus)': '#FDBA74',
+  'mattpocock': '#A5B4FC',
+  'gstack': '#FCD34D',
+  'Vercel Engineering': '#E5E7EB',
+};
+
+const AUTHOR_ACCENT_LIGHT: Record<string, string> = {
+  'superpowers(obra)': '#B91C1C',
+  'impeccable(pbakaus)': '#C2410C',
+  'mattpocock': '#4338CA',
+  'gstack': '#A16207',
+  'Vercel Engineering': '#374151',
+};
+
+export function authorAccent(t: Tokens, author: string | undefined): string {
+  if (!author) return t.textTertiary;
+  const isDark = t.bg === DARK.bg;
+  const table = isDark ? AUTHOR_ACCENT_DARK : AUTHOR_ACCENT_LIGHT;
+  return table[author] ?? t.textSecondary;
+}
+
 export const cssObj = {
   root: (t: Tokens) => css`
     min-height: 100vh;
@@ -512,6 +535,12 @@ export const cssObj = {
     align-items: center;
   `,
 
+  detailAuthorLine: (t: Tokens) => css`
+    font-size: 12px;
+    color: ${t.textSecondary};
+    margin-top: 2px;
+  `,
+
   detailBadge: (t: Tokens, kind: 'scope' | 'kind' | 'self' | 'plugin') => css`
     font-size: 11px;
     font-weight: 600;
@@ -595,6 +624,63 @@ export const cssObj = {
       background: ${t.cellHeaderBg};
       border-color: ${t.textTertiary};
     }
+  `,
+
+  detailRelatedCard: (t: Tokens) => css`
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 16px;
+    background: ${t.cellBg};
+    border: 1px solid ${t.border};
+    border-radius: 8px;
+  `,
+
+  detailRelatedTitle: (t: Tokens) => css`
+    font-size: 11px;
+    font-weight: 700;
+    color: ${t.textTertiary};
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  `,
+
+  detailRelatedChips: (t: Tokens) => css`
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  `,
+
+  detailRelatedChip: (t: Tokens, author: string | undefined) => {
+    const accent = authorAccent(t, author);
+    return css`
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 4px;
+      line-height: 1;
+      border: 1px solid ${accent}55;
+      color: ${accent};
+      background: ${t.badgeBg};
+      cursor: pointer;
+      font-family: inherit;
+      &:hover {
+        background: ${t.cellHeaderBg};
+        border-color: ${accent};
+      }
+    `;
+  },
+
+  detailRelatedOrphan: (t: Tokens) => css`
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 4px;
+    line-height: 1;
+    border: 1px dashed ${t.border};
+    color: ${t.textTertiary};
+    background: transparent;
+    font-style: italic;
   `,
 
   detailContentCard: (t: Tokens) => css`

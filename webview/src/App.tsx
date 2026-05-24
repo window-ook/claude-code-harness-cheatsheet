@@ -10,12 +10,15 @@ import {
   SCOPES,
   SCOPE_LABEL,
   authorIdFor,
+  buildItemBySlug,
+  buildRelatesIndex,
   filterItems,
   sourceGroupIdFor,
   type Bucket,
   type HarnessData,
   type HarnessItem,
   type Kind,
+  type RelatesIndex,
   type Scope,
   type SourceGroupId,
   type Theme,
@@ -173,6 +176,21 @@ export function App() {
     });
     return { groupIds: order, groupCounts: counts };
   }, [data]);
+
+  const allItems = useMemo<HarnessItem[]>(() => {
+    if (!data) return [];
+    const out: HarnessItem[] = [];
+    for (const scope of SCOPES) {
+      for (const kind of KINDS) {
+        const key = `${scope}.${kind}` as Bucket;
+        out.push(...(data.buckets[key] ?? []));
+      }
+    }
+    return out;
+  }, [data]);
+
+  const relatesIndex = useMemo<RelatesIndex>(() => buildRelatesIndex(allItems), [allItems]);
+  const itemBySlug = useMemo(() => buildItemBySlug(allItems), [allItems]);
 
   const { authorIds, authorCounts } = useMemo(() => {
     if (!data) return { authorIds: [] as string[], authorCounts: {} as Record<string, number> };
@@ -503,6 +521,9 @@ export function App() {
             error={detailError}
             onBack={backToMatrix}
             onOpen={openFile}
+            relatesIndex={relatesIndex}
+            itemBySlug={itemBySlug}
+            onSelectRelated={selectItem}
           />
         ) : filteredData ? (
           <Matrix
