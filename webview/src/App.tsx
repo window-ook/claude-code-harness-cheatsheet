@@ -5,7 +5,6 @@ import {
   KINDS,
   SCOPES,
   filterItems,
-  groupKeyFor,
   type Bucket,
   type HarnessData,
   type HarnessItem,
@@ -111,13 +110,6 @@ export function App() {
 
   const t = tokensFor(theme);
   const summary = useMemo(() => computeSummary(data, query), [data, query]);
-  const firstMatchKey = summary.firstMatch
-    ? `${groupKeyFor({
-        source: summary.firstMatch.source,
-        pluginName: summary.firstMatch.pluginName,
-        namespace: summary.firstMatch.namespace,
-      })}::${summary.firstMatch.name}`
-    : undefined;
 
   const toggleTheme = () => {
     setTheme((prev) => {
@@ -244,8 +236,6 @@ export function App() {
       ) : (
         <div css={cssObj.loading(t)}>스캔 중…</div>
       )}
-      {/* firstMatchKey는 Matrix가 자체 계산해서 사용. App에서 별도 전달은 불필요. */}
-      {firstMatchKey ? null : null}
     </div>
   );
 }
