@@ -61,7 +61,7 @@ export function filterItems(items: HarnessItem[], q: string): HarnessItem[] {
 export function groupItems(items: HarnessItem[]): Group[] {
   const map = new Map<string, Group>();
   for (const item of items) {
-    const key = `${item.source}::${item.pluginName ?? ''}::${item.namespace}`;
+    const key = groupKeyFor(item);
     const existing = map.get(key);
     if (existing) {
       existing.items.push(item);
@@ -82,4 +82,14 @@ export function groupItems(items: HarnessItem[]): Group[] {
     if (pa !== pb) return pa.localeCompare(pb);
     return a.namespace.localeCompare(b.namespace);
   });
+}
+
+export type GroupKey = string;
+
+export function groupKeyFor(item: { source: Source; pluginName?: string; namespace: string }): GroupKey {
+  return `${item.source}::${item.pluginName ?? ''}::${item.namespace}`;
+}
+
+export function defaultExpandedFor(source: Source): boolean {
+  return source === 'self';
 }
