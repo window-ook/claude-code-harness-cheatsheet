@@ -9,6 +9,7 @@ import {
   KIND_LABEL,
   SCOPES,
   SCOPE_LABEL,
+  authorIdFor,
   filterItems,
   sourceGroupIdFor,
   type Bucket,
@@ -98,6 +99,8 @@ export function App() {
   const groupsInitializedRef = useRef(false);
   const [enabledScopes, setEnabledScopes] = useState<Set<Scope>>(() => new Set<Scope>(SCOPES));
   const [enabledKinds, setEnabledKinds] = useState<Set<Kind>>(() => new Set<Kind>(KINDS));
+  const [enabledAuthors, setEnabledAuthors] = useState<Set<string>>(new Set());
+  const authorsInitializedRef = useRef(false);
 
   useEffect(() => {
     const handler = (event: MessageEvent) => {
@@ -171,6 +174,27 @@ export function App() {
     return { groupIds: order, groupCounts: counts };
   }, [data]);
 
+  const { authorIds, authorCounts } = useMemo(() => {
+    if (!data) return { authorIds: [] as string[], authorCounts: {} as Record<string, number> };
+    const counts: Record<string, number> = {};
+    const order: string[] = [];
+    for (const scope of SCOPES) {
+      for (const kind of KINDS) {
+        const key = `${scope}.${kind}` as Bucket;
+        for (const item of data.buckets[key] ?? []) {
+          const id = authorIdFor(item);
+          if (counts[id] === undefined) {
+            counts[id] = 0;
+            order.push(id);
+          }
+          counts[id] += 1;
+        }
+      }
+    }
+    order.sort((a, b) => a.localeCompare(b));
+    return { authorIds: order, authorCounts: counts };
+  }, [data]);
+
   useEffect(() => {
     if (!data) return;
     if (!groupsInitializedRef.current) {
@@ -197,6 +221,32 @@ export function App() {
     });
   }, [data, groupIds]);
 
+  useEffect(() => {
+    if (!data) return;
+    if (!authorsInitializedRef.current) {
+      setEnabledAuthors(new Set(authorIds));
+      authorsInitializedRef.current = true;
+      return;
+    }
+    setEnabledAuthors((prev) => {
+      const known = new Set(authorIds);
+      let changed = false;
+      const next = new Set<string>();
+      for (const id of prev) {
+        if (known.has(id)) next.add(id);
+        else changed = true;
+      }
+      const knownInPrev = new Set(prev);
+      for (const id of authorIds) {
+        if (!knownInPrev.has(id) && prev.size > 0 && prev.size === knownInPrev.size) {
+          next.add(id);
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [data, authorIds]);
+
   const filteredData = useMemo<HarnessData | null>(() => {
     if (!data) return null;
     const buckets = {} as HarnessData['buckets'];
@@ -210,11 +260,13 @@ export function App() {
           buckets[key] = [];
           continue;
         }
-        buckets[key] = all.filter((it) => enabledGroups.has(sourceGroupIdFor(it)));
+        buckets[key] = all.filter((it) =>
+          enabledGroups.has(sourceGroupIdFor(it)) && enabledAuthors.has(authorIdFor(it)),
+        );
       }
     }
     return { generatedAt: data.generatedAt, buckets };
-  }, [data, enabledGroups, enabledScopes, enabledKinds]);
+  }, [data, enabledGroups, enabledScopes, enabledKinds, enabledAuthors]);
 
   const summary = useMemo(() => computeSummary(filteredData, query), [filteredData, query]);
 
@@ -413,6 +465,10 @@ export function App() {
               kindCounts={kindCounts}
               enabledKinds={enabledKinds}
               onChangeKinds={setEnabledKinds}
+              authors={authorIds}
+              authorCounts={authorCounts}
+              enabledAuthors={enabledAuthors}
+              onChangeAuthors={setEnabledAuthors}
             />
           ) : null}
           <button type="button" css={cssObj.refreshButton(t)} onClick={refresh}>

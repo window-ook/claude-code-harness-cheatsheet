@@ -6,6 +6,7 @@ import {
   KIND_LABEL,
   SCOPES,
   SCOPE_LABEL,
+  authorLabel,
   sourceGroupLabel,
   type Kind,
   type Scope,
@@ -25,6 +26,10 @@ type Props = {
   kindCounts: Record<Kind, number>;
   enabledKinds: Set<Kind>;
   onChangeKinds: (next: Set<Kind>) => void;
+  authors: string[];
+  authorCounts: Record<string, number>;
+  enabledAuthors: Set<string>;
+  onChangeAuthors: (next: Set<string>) => void;
 };
 
 export function GroupFilter({
@@ -39,6 +44,10 @@ export function GroupFilter({
   kindCounts,
   enabledKinds,
   onChangeKinds,
+  authors,
+  authorCounts,
+  enabledAuthors,
+  onChangeAuthors,
 }: Props) {
   const t = tokensFor(theme);
   const [open, setOpen] = useState(false);
@@ -81,7 +90,8 @@ export function GroupFilter({
   const totalHidden =
     groups.length - enabledGroups.size +
     SCOPES.length - enabledScopes.size +
-    KINDS.length - enabledKinds.size;
+    KINDS.length - enabledKinds.size +
+    authors.length - enabledAuthors.size;
   const hasAnyFilter = totalHidden > 0;
 
   const toggle = <T,>(set: Set<T>, value: T, apply: (next: Set<T>) => void) => {
@@ -95,11 +105,13 @@ export function GroupFilter({
     onChangeGroups(new Set(groups));
     onChangeScopes(new Set(SCOPES));
     onChangeKinds(new Set(KINDS));
+    onChangeAuthors(new Set(authors));
   };
   const selectNone = () => {
     onChangeGroups(new Set());
     onChangeScopes(new Set());
     onChangeKinds(new Set());
+    onChangeAuthors(new Set());
   };
 
   return (
@@ -181,6 +193,24 @@ export function GroupFilter({
               <span css={cssObj.groupFilterCount(t)}>{groupCounts[id] ?? 0}</span>
             </label>
           ))}
+
+          {authors.length > 0 ? (
+            <>
+              <div css={cssObj.groupFilterSectionLabel(t)}>작성자</div>
+              {authors.map((id) => (
+                <label key={id} css={cssObj.groupFilterRow(t)}>
+                  <input
+                    type="checkbox"
+                    css={cssObj.groupFilterCheckbox(t)}
+                    checked={enabledAuthors.has(id)}
+                    onChange={() => toggle(enabledAuthors, id, onChangeAuthors)}
+                  />
+                  <span>{authorLabel(id)}</span>
+                  <span css={cssObj.groupFilterCount(t)}>{authorCounts[id] ?? 0}</span>
+                </label>
+              ))}
+            </>
+          ) : null}
         </div>
       ) : null}
     </div>

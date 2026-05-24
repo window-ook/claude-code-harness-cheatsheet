@@ -112,9 +112,14 @@ export function sourceGroupIdFor(item: Pick<HarnessItem, 'source' | 'pluginName'
   return item.source === 'self' ? 'self' : `plugin:${item.pluginName ?? ''}`;
 }
 
-export function authorGroupIdFor(item: Pick<HarnessItem, 'author'>): SourceGroupId | null {
-  if (!item.author) return null;
-  return `author:${item.author}`;
+export const AUTHOR_NONE_ID = '__none__';
+
+export function authorIdFor(item: Pick<HarnessItem, 'author'>): string {
+  return item.author && item.author.trim() ? item.author : AUTHOR_NONE_ID;
+}
+
+export function authorLabel(id: string): string {
+  return id === AUTHOR_NONE_ID ? '작성자 없음' : id;
 }
 
 export function sourceGroupLabel(id: SourceGroupId): string {
