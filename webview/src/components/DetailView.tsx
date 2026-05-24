@@ -80,6 +80,14 @@ export function DetailView({
     return kw.filter((s): s is string => typeof s === 'string' && s.trim().length > 0);
   })();
 
+  const argumentHint = asString(fm['argument-hint']) ?? asString(fm.argumentHint);
+  const argumentTokens = argumentHint
+    ? argumentHint
+        .split(/[,·•]+|\s{2,}/)
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : [];
+
   const disableModelInvocation = asBool(fm['disable-model-invocation']) ?? asBool(fm.disableModelInvocation);
   const isAgent = kind === 'agents';
   const isSelf = item.source === 'self';
@@ -153,6 +161,17 @@ export function DetailView({
             </button>
           </div>
         )}
+
+        {argumentTokens.length > 0 ? (
+          <div css={cssObj.detailTriggerRow(t)}>
+            <span css={cssObj.detailTriggerLabel(t)}>인자</span>
+            {argumentTokens.map((tok, i) => (
+              <span key={`${tok}-${i}`} css={cssObj.detailTriggerValue(t)}>
+                {tok}
+              </span>
+            ))}
+          </div>
+        ) : null}
 
         {triggerKeywords.length > 0 ? (
           <div css={cssObj.detailTriggerRow(t)}>
