@@ -1,0 +1,75 @@
+{
+  "name": "claude-harness-cheatsheet",
+  "displayName": "Claude Harness Cheatsheet",
+  "description": "IDE 안에서 Claude Code의 스킬/커맨드/에이전트를 매트릭스로 한눈에 확인. View all Claude Code skills, commands, and agents in a matrix overlay inside VSCode/Cursor.",
+  "version": "0.2.0",
+  "publisher": "windowook",
+  "license": "MIT",
+  "icon": "images/icon.png",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Visualization", "Other"],
+  "keywords": [
+    "claude",
+    "claude-code",
+    "cheatsheet",
+    "skills",
+    "commands",
+    "agents",
+    "anthropic"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/window-ook/claude-harness-cheatsheet"
+  },
+  "main": "./dist/extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "commands": [
+      {
+        "command": "claudeHarnessCheatsheet.toggle",
+        "title": "Claude Harness: 치트시트 열기/닫기"
+      },
+      {
+        "command": "claudeHarnessCheatsheet.refresh",
+        "title": "Claude Harness: 다시 스캔"
+      },
+      {
+        "command": "claudeHarnessCheatsheet.search",
+        "title": "Claude Harness: 검색 (Quick Pick)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "claudeHarnessCheatsheet.toggle",
+        "key": "ctrl+shift+h",
+        "mac": "cmd+shift+h"
+      },
+      {
+        "command": "claudeHarnessCheatsheet.search",
+        "key": "ctrl+shift+alt+h",
+        "mac": "cmd+shift+alt+h"
+      }
+    ]
+  },
+  "scripts": {
+    "build:ext": "esbuild src/extension.ts --bundle --platform=node --target=node18 --external:vscode --format=cjs --outfile=dist/extension.js",
+    "build:webview": "cd webview && pnpm build",
+    "build": "pnpm build:ext && pnpm build:webview",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "watch:webview": "cd webview && pnpm dev",
+    "vscode:prepublish": "pnpm build",
+    "package": "vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "esbuild": "^0.20.0",
+    "gray-matter": "^4.0.3",
+    "js-yaml": "^4.1.0",
+    "@types/js-yaml": "^4.0.9",
+    "typescript": "^5.3.0",
+    "@vscode/vsce": "^2.24.0"
+  }
+}
