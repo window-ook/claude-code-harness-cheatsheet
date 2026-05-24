@@ -241,6 +241,75 @@ async function runQuickPick() {
   }
 }
 
+async function runLint() {
+  const data = cachedData ?? (await refreshData());
+  const all = flattenItems(data);
+  const channel = outputChannel ?? vscode.window.createOutputChannel('Claude Harness Cheatsheet');
+  channel.clear();
+  channel.show(true);
+  channel.appendLine(`[lint] 스캔 결과: ${all.length}개 항목`);
+  channel.appendLine('');
+
+  const bySlug = new Map<string, HarnessItem>();
+  for (const it of all) {
+    if (!bySlug.has(it.name)) bySlug.set(it.name, it);
+  }
+
+  // 1. relates 대상 slug 존재 여부
+  const missingTargets: string[] = [];
+  for (const it of all) {
+    if (!it.relates) continue;
+    for (const target of it.relates) {
+      if (!bySlug.has(target)) {
+        missingTargets.push(`  ${it.name} -> ${target}  (대상 없음)`);
+      }
+    }
+  }
+
+  // 2. 양방향 무결성
+  const asymmetric: string[] = [];
+  for (const it of all) {
+    if (!it.relates) continue;
+    for (const target of it.relates) {
+      const t = bySlug.get(target);
+      if (!t) continue;
+      if (!t.relates || !t.relates.includes(it.name)) {
+        asymmetric.push(`  ${it.name} -> ${target}  (역방향 없음)`);
+      }
+    }
+  }
+
+  // 3. author 누락
+  const missingAuthor: string[] = [];
+  for (const it of all) {
+    if (!it.author || !it.author.trim()) {
+      if (!it.isSubAsset) {
+        missingAuthor.push(`  ${it.name}  (${it.scope}/${it.kind}, ${it.filePath})`);
+      }
+    }
+  }
+
+  channel.appendLine(`[1] relates 대상이 존재하지 않는 항목 (${missingTargets.length}건)`);
+  if (missingTargets.length === 0) channel.appendLine('  ✓ 문제 없음');
+  else missingTargets.forEach((l) => channel.appendLine(l));
+  channel.appendLine('');
+
+  channel.appendLine(`[2] 양방향 무결성 경고 (${asymmetric.length}건) — A→B이지만 B→A가 없는 경우`);
+  if (asymmetric.length === 0) channel.appendLine('  ✓ 문제 없음');
+  else {
+    channel.appendLine('  의도적 비대칭(entry point, cross-link)일 수 있습니다.');
+    asymmetric.forEach((l) => channel.appendLine(l));
+  }
+  channel.appendLine('');
+
+  channel.appendLine(`[3] author 필드가 없는 skill/command/agent (${missingAuthor.length}건)`);
+  if (missingAuthor.length === 0) channel.appendLine('  ✓ 문제 없음');
+  else missingAuthor.forEach((l) => channel.appendLine(l));
+  channel.appendLine('');
+
+  channel.appendLine(`[요약] missing-target=${missingTargets.length} asymmetric=${asymmetric.length} missing-author=${missingAuthor.length}`);
+}
+
 function registerWatchers(context: vscode.ExtensionContext) {
   const home = os.homedir();
   const userBase = path.join(home, '.claude');
@@ -286,6 +355,9 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(
     vscode.commands.registerCommand('claudeHarnessCheatsheet.search', () => runQuickPick()),
+  );
+  context.subscriptions.push(
+    vscode.commands.registerCommand('claudeHarnessCheatsheet.lint', () => runLint()),
   );
 
   registerWatchers(context);
