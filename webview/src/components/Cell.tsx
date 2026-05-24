@@ -58,7 +58,7 @@ export function Cell({
           )}
         </span>
       </div>
-      <div css={cssObj.cellBody}>
+      <div css={cssObj.cellBody(t)}>
         {groups.length === 0 ? (
           <div css={cssObj.cellEmpty(t)}>
             {isFiltering && total > 0 ? '일치 항목 없음' : '없음'}

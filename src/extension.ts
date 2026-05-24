@@ -2,7 +2,76 @@ import * as vscode from 'vscode';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { promises as fs } from 'node:fs';
+import matter from 'gray-matter';
+import yaml from 'js-yaml';
 import { scanHarness, type HarnessData, type HarnessItem } from './scanner';
+
+const matterOptions = {
+  engines: {
+    yaml: {
+      parse: (input: string) => yaml.load(input) as object,
+      stringify: (input: object) => yaml.dump(input),
+    },
+  },
+};
+
+type DetailFile = {
+  name: string;
+  fileName: string;
+  filePath: string;
+  content: string;
+  frontmatter: Record<string, unknown>;
+};
+
+type DetailResponse = {
+  requestId: string;
+  files: DetailFile[];
+};
+
+async function readDetailFiles(filePath: string): Promise<DetailFile[]> {
+  const dir = path.dirname(filePath);
+  let entries: string[] = [];
+  try {
+    const listing = await fs.readdir(dir, { withFileTypes: true });
+    entries = listing
+      .filter((e) => e.isFile() && e.name.endsWith('.md'))
+      .map((e) => path.join(dir, e.name));
+  } catch {
+    entries = [filePath];
+  }
+  if (entries.length === 0) entries = [filePath];
+
+  const PRIMARY = new Set(['SKILL.md', 'COMMAND.md', 'AGENT.md']);
+  entries.sort((a, b) => {
+    const aBase = path.basename(a);
+    const bBase = path.basename(b);
+    const aPri = PRIMARY.has(aBase) ? 0 : 1;
+    const bPri = PRIMARY.has(bBase) ? 0 : 1;
+    if (aPri !== bPri) return aPri - bPri;
+    return aBase.localeCompare(bBase);
+  });
+
+  const out: DetailFile[] = [];
+  for (const f of entries) {
+    try {
+      const raw = await fs.readFile(f, 'utf-8');
+      const parsed = matter(raw, matterOptions);
+      const fm = (parsed.data ?? {}) as Record<string, unknown>;
+      const fmName = typeof fm.name === 'string' ? (fm.name as string).trim() : '';
+      const baseName = path.basename(f, '.md');
+      out.push({
+        name: fmName || baseName,
+        fileName: path.basename(f),
+        filePath: f,
+        content: raw,
+        frontmatter: fm,
+      });
+    } catch {
+      // skip unreadable
+    }
+  }
+  return out;
+}
 
 let panel: vscode.WebviewPanel | undefined;
 let outputChannel: vscode.OutputChannel | undefined;
@@ -40,6 +109,8 @@ async function loadWebviewHtml(context: vscode.ExtensionContext, webview: vscode
   const csp = `default-src 'none'; img-src ${webview.cspSource} data:; style-src ${webview.cspSource} 'unsafe-inline'; font-src ${webview.cspSource}; script-src ${webview.cspSource} 'nonce-${nonce}';`;
   html = html.replace('<head>', `<head><meta http-equiv="Content-Security-Policy" content="${csp}">`);
   html = html.replace(/<script /g, `<script nonce="${nonce}" `);
+  const bootstrap = `<script nonce="${nonce}">window.__HARNESS_ASSET_BASE__=${JSON.stringify(distBase)};</script>`;
+  html = html.replace('</head>', `${bootstrap}</head>`);
   return html;
 }
 
@@ -101,13 +172,26 @@ async function openOrToggle(context: vscode.ExtensionContext) {
   panel.webview.html = await loadWebviewHtml(context, panel.webview);
 
   panel.webview.onDidReceiveMessage(
-    async (msg: { type: string; filePath?: string }) => {
+    async (msg: { type: string; filePath?: string; requestId?: string }) => {
       if (msg?.type === 'harness/ready') {
         if (panel) await sendData(panel);
       } else if (msg?.type === 'harness/refresh') {
         if (panel) await sendData(panel, true);
       } else if (msg?.type === 'harness/openFile' && msg.filePath) {
         await openFileAt(msg.filePath);
+      } else if (msg?.type === 'harness/openDetail' && msg.filePath && msg.requestId) {
+        try {
+          const files = await readDetailFiles(msg.filePath);
+          const response: DetailResponse = { requestId: msg.requestId, files };
+          void panel?.webview.postMessage({ type: 'harness/detail', ...response });
+        } catch (err) {
+          log('openDetail 실패:', String(err));
+          void panel?.webview.postMessage({
+            type: 'harness/detailError',
+            requestId: msg.requestId,
+            message: String(err),
+          });
+        }
       }
     },
     undefined,

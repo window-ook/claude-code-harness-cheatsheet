@@ -2,7 +2,7 @@ import { cssObj, tokensFor } from '../style';
 import { Item } from './Item';
 import { Highlight } from './Highlight';
 import { ChevronIcon } from './Icons';
-import type { HarnessItem, Source, Theme } from '../types';
+import { isSingleFileNamespace, type HarnessItem, type Source, type Theme } from '../types';
 
 type Props = {
   groupKey: string;
@@ -50,9 +50,11 @@ export function NamespaceGroup({
         <span css={cssObj.groupChevron(t)}>
           <ChevronIcon expanded={expanded} size={14} />
         </span>
-        <span css={cssObj.namespaceLabel(t, isPlugin)}>
-          <Highlight text={namespace} query={query} theme={theme} />
-        </span>
+        {isSingleFileNamespace(namespace) ? null : (
+          <span css={cssObj.namespaceLabel(t, isPlugin)}>
+            <Highlight text={namespace} query={query} theme={theme} />
+          </span>
+        )}
         {isPlugin ? (
           <span css={cssObj.namespacePluginBadge(t)}>{pluginName ?? 'plugin'}</span>
         ) : (

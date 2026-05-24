@@ -84,7 +84,25 @@ export function groupItems(items: HarnessItem[]): Group[] {
   });
 }
 
+export const SINGLE_FILE_NAMESPACE = '__single__';
+export const SINGLE_FILE_NAMESPACE_LABEL = '';
+
+export function isSingleFileNamespace(namespace: string): boolean {
+  return namespace === SINGLE_FILE_NAMESPACE;
+}
+
 export type GroupKey = string;
+
+export type SourceGroupId = string;
+
+export function sourceGroupIdFor(item: Pick<HarnessItem, 'source' | 'pluginName'>): SourceGroupId {
+  return item.source === 'self' ? 'self' : `plugin:${item.pluginName ?? ''}`;
+}
+
+export function sourceGroupLabel(id: SourceGroupId): string {
+  if (id === 'self') return 'self';
+  return id.replace(/^plugin:/, '');
+}
 
 export function groupKeyFor(item: { source: Source; pluginName?: string; namespace: string }): GroupKey {
   return `${item.source}::${item.pluginName ?? ''}::${item.namespace}`;

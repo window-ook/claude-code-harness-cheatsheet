@@ -75,10 +75,12 @@ async function listMarkdownFiles(dir: string): Promise<string[]> {
   return out;
 }
 
+const SINGLE_FILE_NAMESPACE = '__single__';
+
 function deriveNamespace(filePath: string, baseDir: string): string {
   const rel = path.relative(baseDir, filePath);
   const segments = rel.split(path.sep);
-  if (segments.length <= 1) return '(root)';
+  if (segments.length <= 1) return SINGLE_FILE_NAMESPACE;
   return segments[0];
 }
 
@@ -87,6 +89,23 @@ function firstLine(text: string): string {
   if (!trimmed) return '';
   const idx = trimmed.indexOf('\n');
   return idx === -1 ? trimmed : trimmed.slice(0, idx).trim();
+}
+
+function deriveDescriptionFromBody(body: string): string {
+  if (!body) return '';
+  const lines = body.split('\n');
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) continue;
+    if (line.startsWith('---')) continue;
+    if (line.startsWith('#')) {
+      const stripped = line.replace(/^#+\s*/, '').trim();
+      if (stripped) return stripped;
+      continue;
+    }
+    return line;
+  }
+  return '';
 }
 
 async function parseItem(
@@ -102,14 +121,20 @@ async function parseItem(
     const fm = (parsed.data ?? {}) as Record<string, unknown>;
     const fileName = path.basename(filePath);
     const hasFrontmatterName = typeof fm.name === 'string' && (fm.name as string).trim().length > 0;
+    const isPrimaryNamed = PRIMARY_FILES.has(fileName) || hasFrontmatterName;
+    const isSubAssetCandidate = !isPrimaryNamed && fileName.endsWith('.md');
     const rawName = hasFrontmatterName
       ? (fm.name as string).trim()
-      : path.basename(filePath, '.md');
+      : isSubAssetCandidate
+        ? fileName
+        : path.basename(filePath, '.md');
     const name = firstLine(rawName);
-    const description = firstLine(typeof fm.description === 'string' ? (fm.description as string) : '');
+    const fmDescription = firstLine(
+      typeof fm.description === 'string' ? (fm.description as string) : '',
+    );
+    const description = fmDescription || deriveDescriptionFromBody(parsed.content ?? '');
     const namespace = deriveNamespace(filePath, kindDir);
-    const isPrimary = PRIMARY_FILES.has(fileName) || hasFrontmatterName;
-    const isSubAsset = !isPrimary && namespace !== '(root)';
+    const isSubAsset = !isPrimaryNamed && namespace !== SINGLE_FILE_NAMESPACE;
     return {
       name,
       description,

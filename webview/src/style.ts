@@ -46,21 +46,33 @@ export function tokensFor(theme: Theme): Tokens {
 
 export const cssObj = {
   root: (t: Tokens) => css`
-    width: 100vw;
-    height: 100vh;
+    min-height: 100vh;
     background: ${t.bg};
     color: ${t.textPrimary};
-    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    overflow: hidden;
+  `,
+
+  shell: (t: Tokens) => css`
+    width: 100%;
+    max-width: 1350px;
+    height: 100vh;
+    padding: 16px 18px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
     box-sizing: border-box;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: ${t.textPrimary};
+    overflow: visible;
   `,
 
   header: (t: Tokens) => css`
     display: flex;
-    align-items: baseline;
+    align-items: center;
     flex-wrap: wrap;
     gap: 12px;
     color: ${t.textSecondary};
@@ -71,6 +83,7 @@ export const cssObj = {
     color: ${t.textPrimary};
     font-size: 18px;
     font-weight: 700;
+    line-height: 1;
   `,
 
   themeToggle: (t: Tokens) => css`
@@ -83,6 +96,10 @@ export const cssObj = {
     border: 1px solid ${t.border};
     border-radius: 6px;
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1;
     transition: background 0.15s ease, border-color 0.15s ease;
     &:hover {
       background: ${t.cellHeaderBg};
@@ -103,6 +120,10 @@ export const cssObj = {
     border: 1px solid ${t.border};
     border-radius: 6px;
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1;
     &:hover {
       background: ${t.cellHeaderBg};
       border-color: ${t.textTertiary};
@@ -122,8 +143,9 @@ export const cssObj = {
     position: absolute;
     left: 10px;
     pointer-events: none;
-    font-size: 12px;
     color: ${t.textTertiary};
+    display: inline-flex;
+    align-items: center;
   `,
 
   searchInput: (t: Tokens) => css`
@@ -173,6 +195,153 @@ export const cssObj = {
     margin-left: 4px;
   `,
 
+  groupFilterWrap: (t: Tokens) => css`
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  `,
+
+  groupFilterToggle: (t: Tokens, active: boolean) => css`
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: ${t.textPrimary};
+    background: ${active ? t.cellHeaderBg : t.badgeBg};
+    border: 1px solid ${active ? t.textTertiary : t.border};
+    border-radius: 6px;
+    cursor: pointer;
+    line-height: 1;
+    &:hover {
+      background: ${t.cellHeaderBg};
+      border-color: ${t.textTertiary};
+    }
+  `,
+
+  groupFilterBadge: (t: Tokens) => css`
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 16px;
+    padding: 1px 5px;
+    font-size: 10px;
+    font-weight: 700;
+    color: ${t.textPrimary};
+    background: ${t.selfAccent}55;
+    border-radius: 8px;
+    line-height: 1.2;
+  `,
+
+  groupFilterPanel: (t: Tokens) => css`
+    position: fixed;
+    z-index: 1000;
+    width: 360px;
+    max-width: min(560px, 90vw);
+    max-height: min(70vh, 480px);
+    overflow-y: auto;
+    background: ${t.cellBg};
+    color: ${t.textPrimary};
+    border: 1px solid ${t.border};
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    scrollbar-width: thin;
+    scrollbar-color: ${t.border} transparent;
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+    &::-webkit-scrollbar-track {
+      background: ${t.cellBg};
+    }
+    &::-webkit-scrollbar-thumb {
+      background: ${t.border};
+      border-radius: 4px;
+      border: 2px solid ${t.cellBg};
+      background-clip: padding-box;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+      background: ${t.textTertiary};
+      background-clip: padding-box;
+      border: 2px solid ${t.cellBg};
+    }
+  `,
+
+  groupFilterSectionLabel: (t: Tokens) => css`
+    font-size: 10px;
+    font-weight: 700;
+    color: ${t.textTertiary};
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 8px 8px 4px;
+    margin-top: 2px;
+  `,
+
+  groupFilterRow: (t: Tokens) => css`
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 8px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    color: ${t.textPrimary};
+    user-select: none;
+    &:hover {
+      background: ${t.cellHeaderBg};
+    }
+  `,
+
+  groupFilterCheckbox: (t: Tokens) => css`
+    width: 14px;
+    height: 14px;
+    accent-color: ${t.selfAccent};
+    cursor: pointer;
+  `,
+
+  groupFilterCount: (t: Tokens) => css`
+    margin-left: auto;
+    font-size: 11px;
+    color: ${t.textTertiary};
+  `,
+
+  groupFilterDivider: (t: Tokens) => css`
+    height: 1px;
+    background: ${t.border};
+    margin: 4px 0;
+  `,
+
+  groupFilterActionRow: (t: Tokens) => css`
+    display: flex;
+    gap: 6px;
+    padding: 4px 6px;
+  `,
+
+  groupFilterActionButton: (t: Tokens) => css`
+    flex: 1;
+    padding: 5px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: ${t.textPrimary};
+    background: ${t.badgeBg};
+    border: 1px solid ${t.border};
+    border-radius: 5px;
+    cursor: pointer;
+    line-height: 1;
+    &:hover {
+      background: ${t.cellHeaderBg};
+      border-color: ${t.textTertiary};
+    }
+  `,
+
+  headerSpacer: css`
+    flex: 1 1 auto;
+  `,
+
   cellHeaderCount: (t: Tokens) => css`
     color: ${t.textTertiary};
     font-weight: 500;
@@ -192,9 +361,9 @@ export const cssObj = {
   `,
 
   logo: css`
-    width: 24px;
-    height: 24px;
-    border-radius: 4px;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
     object-fit: contain;
     flex-shrink: 0;
   `,
@@ -268,13 +437,248 @@ export const cssObj = {
     }
   `,
 
+  detailRoot: (t: Tokens) => css`
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 4px 2px 24px;
+    scrollbar-width: thin;
+    scrollbar-color: ${t.border} transparent;
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: ${t.border};
+      border-radius: 4px;
+      border: 2px solid transparent;
+      background-clip: content-box;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+      background: ${t.textTertiary};
+      background-clip: content-box;
+    }
+  `,
+
+  detailBackBar: (t: Tokens) => css`
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  `,
+
+  detailBackButton: (t: Tokens) => css`
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: ${t.textPrimary};
+    background: ${t.badgeBg};
+    border: 1px solid ${t.border};
+    border-radius: 6px;
+    cursor: pointer;
+    line-height: 1;
+    &:hover {
+      background: ${t.cellHeaderBg};
+      border-color: ${t.textTertiary};
+    }
+  `,
+
+  detailHeader: (t: Tokens) => css`
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px 18px;
+    background: ${t.cellBg};
+    border: 1px solid ${t.border};
+    border-radius: 8px;
+  `,
+
+  detailTitle: (t: Tokens) => css`
+    font-size: 22px;
+    font-weight: 800;
+    color: ${t.textPrimary};
+    line-height: 1.25;
+    word-break: break-word;
+  `,
+
+  detailBadges: css`
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  `,
+
+  detailBadge: (t: Tokens, kind: 'scope' | 'kind' | 'self' | 'plugin') => css`
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    line-height: 1;
+    border: 1px solid
+      ${kind === 'self' ? t.selfAccent + '55' : kind === 'plugin' ? t.pluginAccent + '55' : t.border};
+    color: ${kind === 'self' ? t.selfAccent : kind === 'plugin' ? t.pluginAccent : t.textSecondary};
+    background: ${t.badgeBg};
+  `,
+
+  detailTriggerCard: (t: Tokens) => css`
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 16px;
+    background: ${t.cellBg};
+    border: 1px solid ${t.border};
+    border-radius: 8px;
+  `,
+
+  detailTriggerRow: (t: Tokens) => css`
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  `,
+
+  detailTriggerLabel: (t: Tokens) => css`
+    font-size: 11px;
+    font-weight: 700;
+    color: ${t.textTertiary};
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    min-width: 72px;
+  `,
+
+  detailTriggerValue: (t: Tokens) => css`
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+    color: ${t.textPrimary};
+    background: ${t.cellHeaderBg};
+    border: 1px solid ${t.border};
+    border-radius: 4px;
+    padding: 4px 8px;
+  `,
+
+  detailTriggerPlain: (t: Tokens) => css`
+    font-size: 13px;
+    color: ${t.textSecondary};
+  `,
+
+  detailTriggerOk: (t: Tokens) => css`
+    font-size: 13px;
+    font-weight: 600;
+    color: ${t.selfAccent};
+  `,
+
+  detailTriggerNo: (t: Tokens) => css`
+    font-size: 13px;
+    font-weight: 600;
+    color: ${t.pluginAccent};
+  `,
+
+  detailOpenButton: (t: Tokens) => css`
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: ${t.textPrimary};
+    background: ${t.badgeBg};
+    border: 1px solid ${t.border};
+    border-radius: 6px;
+    cursor: pointer;
+    line-height: 1;
+    &:hover {
+      background: ${t.cellHeaderBg};
+      border-color: ${t.textTertiary};
+    }
+  `,
+
+  detailContentCard: (t: Tokens) => css`
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px 18px;
+    background: ${t.cellBg};
+    border: 1px solid ${t.border};
+    border-radius: 8px;
+  `,
+
+  detailTabBar: (t: Tokens) => css`
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid ${t.border};
+  `,
+
+  detailTab: (t: Tokens, active: boolean) => css`
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: ${active ? 700 : 500};
+    color: ${active ? t.textPrimary : t.textTertiary};
+    background: ${active ? t.cellHeaderBg : 'transparent'};
+    border: 1px solid ${active ? t.textSecondary : t.border};
+    border-radius: 5px;
+    cursor: pointer;
+    line-height: 1;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    &:hover {
+      background: ${t.cellHeaderBg};
+      color: ${t.textPrimary};
+    }
+  `,
+
+  detailLoading: (t: Tokens) => css`
+    color: ${t.textSecondary};
+    font-size: 14px;
+    padding: 24px;
+    text-align: center;
+  `,
+
   matrix: css`
     flex: 1;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(2, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
     gap: 12px;
     min-height: 0;
+  `,
+
+  cellPlaceholder: (t: Tokens) => css`
+    border: 1px dashed ${t.border};
+    border-radius: 6px;
+    background: transparent;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: ${t.textTertiary};
+    font-size: 12px;
+  `,
+
+  matrixEmpty: (t: Tokens) => css`
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 1px dashed ${t.border};
+    border-radius: 8px;
+    color: ${t.textSecondary};
+    font-size: 14px;
+    padding: 32px;
+    text-align: center;
+  `,
+
+  matrixEmptyHint: (t: Tokens) => css`
+    color: ${t.textTertiary};
+    font-size: 12px;
   `,
 
   cell: (t: Tokens) => css`
@@ -307,10 +711,28 @@ export const cssObj = {
     flex-shrink: 0;
   `,
 
-  cellBody: css`
+  cellBody: (t: Tokens) => css`
     flex: 1;
     overflow-y: auto;
     padding: 8px 12px;
+    scrollbar-width: thin;
+    scrollbar-color: ${t.border} transparent;
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: ${t.border};
+      border-radius: 4px;
+      border: 2px solid transparent;
+      background-clip: content-box;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+      background: ${t.textTertiary};
+      background-clip: content-box;
+    }
   `,
 
   cellEmpty: (t: Tokens) => css`
@@ -420,6 +842,7 @@ export const cssObj = {
   itemNameSub: (t: Tokens) => css`
     font-size: 12px;
     font-weight: 400;
+    font-style: italic;
     color: ${t.textTertiary};
     line-height: 1.3;
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
