@@ -729,7 +729,7 @@ export const cssObj = {
     flex: 1;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: minmax(0, 1fr) auto;
+    grid-auto-rows: minmax(0, 1fr);
     gap: 12px;
     min-height: 0;
   `,
