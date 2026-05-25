@@ -1,6 +1,7 @@
 .vscode/**
 .vscode-test/**
 .superpowers/**
+.claude/**
 .git/**
 src/**
 webview/src/**
