@@ -2,7 +2,7 @@
   "name": "claude-code-harness-cheatsheet",
   "displayName": "Claude Code Harness Cheatsheet",
   "description": "IDE 안에서 Claude Code의 스킬/커맨드/에이전트를 매트릭스로 한눈에 확인. View all Claude Code skills, commands, and agents in a matrix overlay inside VSCode/Cursor.",
-  "version": "1.0.1",
+  "version": "1.0.4",
   "publisher": "windowook",
   "license": "MIT",
   "icon": "images/icon.png",
