@@ -64,8 +64,13 @@ export function DetailView({
   const [activeIdx, setActiveIdx] = useState(0);
 
   useEffect(() => {
-    setActiveIdx(0);
-  }, [item.filePath]);
+    if (!files || files.length === 0) {
+      setActiveIdx(0);
+      return;
+    }
+    const matched = files.findIndex((f) => f.filePath === item.filePath);
+    setActiveIdx(matched >= 0 ? matched : 0);
+  }, [item.filePath, files]);
 
   const active = files && files.length > 0 ? files[Math.min(activeIdx, files.length - 1)] : null;
   const fm = active?.frontmatter ?? {};

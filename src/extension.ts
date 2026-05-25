@@ -28,18 +28,26 @@ type DetailResponse = {
   files: DetailFile[];
 };
 
-async function readDetailFiles(filePath: string): Promise<DetailFile[]> {
+async function readDetailFiles(filePath: string, kind?: string): Promise<DetailFile[]> {
+  // commands/agents는 각 파일이 독립 항목이므로 형제를 끌어오지 않는다.
+  // skills만 디렉토리 그룹(SKILL.md + 서브 자산)을 가진다.
+  const isFlat = kind === 'commands' || kind === 'agents';
+
   const dir = path.dirname(filePath);
   let entries: string[] = [];
-  try {
-    const listing = await fs.readdir(dir, { withFileTypes: true });
-    entries = listing
-      .filter((e) => e.isFile() && e.name.endsWith('.md'))
-      .map((e) => path.join(dir, e.name));
-  } catch {
+  if (isFlat) {
     entries = [filePath];
+  } else {
+    try {
+      const listing = await fs.readdir(dir, { withFileTypes: true });
+      entries = listing
+        .filter((e) => e.isFile() && e.name.endsWith('.md'))
+        .map((e) => path.join(dir, e.name));
+    } catch {
+      entries = [filePath];
+    }
+    if (entries.length === 0) entries = [filePath];
   }
-  if (entries.length === 0) entries = [filePath];
 
   const PRIMARY = new Set(['SKILL.md', 'COMMAND.md', 'AGENT.md']);
   entries.sort((a, b) => {
@@ -172,7 +180,7 @@ async function openOrToggle(context: vscode.ExtensionContext) {
   panel.webview.html = await loadWebviewHtml(context, panel.webview);
 
   panel.webview.onDidReceiveMessage(
-    async (msg: { type: string; filePath?: string; requestId?: string }) => {
+    async (msg: { type: string; filePath?: string; requestId?: string; kind?: string }) => {
       if (msg?.type === 'harness/ready') {
         if (panel) await sendData(panel);
       } else if (msg?.type === 'harness/refresh') {
@@ -181,7 +189,7 @@ async function openOrToggle(context: vscode.ExtensionContext) {
         await openFileAt(msg.filePath);
       } else if (msg?.type === 'harness/openDetail' && msg.filePath && msg.requestId) {
         try {
-          const files = await readDetailFiles(msg.filePath);
+          const files = await readDetailFiles(msg.filePath, msg.kind);
           const response: DetailResponse = { requestId: msg.requestId, files };
           void panel?.webview.postMessage({ type: 'harness/detail', ...response });
         } catch (err) {

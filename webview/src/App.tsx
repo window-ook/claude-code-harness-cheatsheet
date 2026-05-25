@@ -335,6 +335,7 @@ export function App() {
         type: 'harness/openDetail',
         filePath: item.filePath,
         requestId,
+        kind: item.kind,
       });
     },
     [vscodeApi],
