@@ -4,9 +4,9 @@
 
 `~/.claude/`와 워크스페이스 `.claude/`의 Claude Code 하네스를 치트 시트로 보세요
 
-<img width="1280" height="720" src="images/first-view.png" />
-<img width="1280" height="720" src="images/detail-view.png" />
-<img width="1280" height="720" src="images/quick-search.png" />
+<img width="900" src="images/first-view.png" />
+<img width="900" src="images/detail-view.png" />
+<img width="900" src="images/quick-search.png" />
 
 ### 기능
 
