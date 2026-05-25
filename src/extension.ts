@@ -159,8 +159,8 @@ async function openOrToggle(context: vscode.ExtensionContext) {
   }
 
   panel = vscode.window.createWebviewPanel(
-    'claudeHarnessCheatsheet',
-    'Claude Harness Cheatsheet',
+    'claudeCodeHarnessCheatsheet',
+    'Claude Code Harness Cheatsheet',
     vscode.ViewColumn.Active,
     {
       enableScripts: true,
@@ -244,7 +244,7 @@ async function runQuickPick() {
 async function runLint() {
   const data = cachedData ?? (await refreshData());
   const all = flattenItems(data);
-  const channel = outputChannel ?? vscode.window.createOutputChannel('Claude Harness Cheatsheet');
+  const channel = outputChannel ?? vscode.window.createOutputChannel('Claude Code Harness Cheatsheet');
   channel.clear();
   channel.show(true);
   channel.appendLine(`[lint] 스캔 결과: ${all.length}개 항목`);
@@ -341,23 +341,23 @@ function registerWatchers(context: vscode.ExtensionContext) {
 }
 
 export function activate(context: vscode.ExtensionContext) {
-  outputChannel = vscode.window.createOutputChannel('Claude Harness Cheatsheet');
+  outputChannel = vscode.window.createOutputChannel('Claude Code Harness Cheatsheet');
   context.subscriptions.push(outputChannel);
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('claudeHarnessCheatsheet.toggle', () => openOrToggle(context)),
+    vscode.commands.registerCommand('claudeCodeHarnessCheatsheet.toggle', () => openOrToggle(context)),
   );
   context.subscriptions.push(
-    vscode.commands.registerCommand('claudeHarnessCheatsheet.refresh', async () => {
+    vscode.commands.registerCommand('claudeCodeHarnessCheatsheet.refresh', async () => {
       if (panel) await sendData(panel, true);
       else await refreshData();
     }),
   );
   context.subscriptions.push(
-    vscode.commands.registerCommand('claudeHarnessCheatsheet.search', () => runQuickPick()),
+    vscode.commands.registerCommand('claudeCodeHarnessCheatsheet.search', () => runQuickPick()),
   );
   context.subscriptions.push(
-    vscode.commands.registerCommand('claudeHarnessCheatsheet.lint', () => runLint()),
+    vscode.commands.registerCommand('claudeCodeHarnessCheatsheet.lint', () => runLint()),
   );
 
   registerWatchers(context);

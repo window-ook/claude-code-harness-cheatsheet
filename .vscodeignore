@@ -19,6 +19,7 @@ docs/**
 **/*.ts
 **/.DS_Store
 assets/**
+archive/**
 HANDOFF.md
 *.vsix
 !dist/**/*

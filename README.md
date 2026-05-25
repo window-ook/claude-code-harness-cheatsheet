@@ -1,72 +1,24 @@
-# Claude Harness Cheatsheet (VSCode/Cursor Extension)
+# Claude Code Harness Cheatsheet
 
-IDE 안에서 `Cmd + /` 한 번으로 Claude Code의 스킬·커맨드·에이전트를 매트릭스로 확인.
+### 스킬·커맨드·에이전트를 에디터 안에서 한눈에
 
-## 무엇을 보여주나
+`~/.claude/`와 워크스페이스 `.claude/`의 Claude Code 하네스를 치트 시트로 보세요
 
-`~/.claude/`와 현재 워크스페이스의 `.claude/`를 스캔해서 다음 6개 셀로 구성된 매트릭스를 표시합니다.
+<img width="1280" height="720" src="images/first-view.png" />
+<img width="1280" height="720" src="images/detail-view.png" />
+<img width="1280" height="720" src="images/quick-search.png" />
 
-|  | 스킬 | 커맨드 | 에이전트 |
-|---|---|---|---|
-| **유저** | `~/.claude/skills` + 플러그인 캐시 | `~/.claude/commands` + 플러그인 | `~/.claude/agents` + 플러그인 |
-| **프로젝트** | `<repo>/.claude/skills` | `<repo>/.claude/commands` | `<repo>/.claude/agents` |
+### 기능
 
-## 개발
+- **통합 2×3 매트릭스**: 유저 스코프와 프로젝트 스코프의 스킬·커맨드·에이전트를 한 화면에
+- **워크스페이스 인식**: `~/.claude/` (+ 플러그인 캐시)와 현재 워크스페이스의 `.claude/`를 함께 스캔, 개인 자산과 프로젝트 자산을 분리해서 표시
+- **frontmatter 상세 패널**: 항목을 클릭하면 `SKILL.md`에서 파싱한 설명·트리거 키워드·작성자·관련 스킬을 확인
+- **Quick Pick 검색**: `Cmd + Shift + Alt + H`로 전 스코프에서 fuzzy 검색
+- **라이트/다크 테마**: 패널 헤더에서 토글, 세션 간 유지
 
-```bash
-pnpm install
-cd webview && pnpm install && cd ..
-pnpm build         # extension + webview 모두 빌드
-```
+### 시작하기
 
-### F5로 실행
+VS Code 마켓플레이스에서 설치
 
-VSCode에서 이 폴더를 열고 `F5` → "Run Extension" → 새 창에서 `Cmd + /` 토글.
-
-### VSIX 패키징
-
-```bash
-pnpm package       # claude-harness-cheatsheet-0.1.0.vsix 생성
-```
-
-설치:
-```bash
-code --install-extension claude-harness-cheatsheet-0.1.0.vsix
-# Cursor도 동일:
-cursor --install-extension claude-harness-cheatsheet-0.1.0.vsix
-```
-
-## 단축키
-
-- `Cmd + /` (mac) / `Ctrl + /` (win/linux) — 토글
-- 패널이 떠 있을 때 우측 상단의 `↻ 다시 스캔` 버튼으로 수동 리프레시
-- `☀ / 🌙` 버튼으로 라이트/다크 전환 (localStorage 저장)
-
-> 기본 키바인딩은 에디터에 포커스가 없을 때만 활성화됩니다 (`when: !editorFocus`). 에디터 라인 주석 단축키와 충돌하지 않게 하기 위함입니다. 충돌이 없다면 `keybindings.json`에서 `when` 조건을 지우세요.
-
-## 동작 원리
-
-```
-Cmd + /
-   │
-   ▼
-extension.ts (activate)
-   │
-   ├─ scanner.ts → ~/.claude/* + <workspace>/.claude/* 워크
-   │                ↓
-   │              HarnessData (JSON)
-   │
-   ▼
-WebviewPanel 생성 → postMessage('harness/data', data)
-   │
-   ▼
-Vite-built React (webview/dist/) → Matrix 렌더
-```
-
-## 의존성
-
-| 영역 | 패키지 | 용도 |
-|---|---|---|
-| extension host | `gray-matter`, `js-yaml` | SKILL.md frontmatter 파싱 |
-| webview | `react`, `@emotion/react` | UI |
-| build | `typescript`, `vite`, `@vscode/vsce` | 빌드 + 패키징 |
+- 치트시트 열기/닫기 -> **`Cmd + Shift + H`** (mac) / **`Ctrl + Shift + H`** (win/linux)
+- Quick Pick 검색 열기 -> **`Cmd + Shift + Alt + H`**

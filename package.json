@@ -1,15 +1,18 @@
 {
-  "name": "claude-harness-cheatsheet",
-  "displayName": "Claude Harness Cheatsheet",
+  "name": "claude-code-harness-cheatsheet",
+  "displayName": "Claude Code Harness Cheatsheet",
   "description": "IDE 안에서 Claude Code의 스킬/커맨드/에이전트를 매트릭스로 한눈에 확인. View all Claude Code skills, commands, and agents in a matrix overlay inside VSCode/Cursor.",
-  "version": "0.3.0",
+  "version": "1.0.1",
   "publisher": "windowook",
   "license": "MIT",
   "icon": "images/icon.png",
   "engines": {
     "vscode": "^1.85.0"
   },
-  "categories": ["Visualization", "Other"],
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
   "keywords": [
     "claude",
     "claude-code",
@@ -21,37 +24,37 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/window-ook/claude-harness-cheatsheet"
+    "url": "https://github.com/window-ook/claude-code-harness-cheatsheet.git"
   },
   "main": "./dist/extension.js",
   "activationEvents": [],
   "contributes": {
     "commands": [
       {
-        "command": "claudeHarnessCheatsheet.toggle",
-        "title": "Claude Harness: 치트시트 열기/닫기"
+        "command": "claudeCodeHarnessCheatsheet.toggle",
+        "title": "Claude Code Harness: 치트시트 열기/닫기"
       },
       {
-        "command": "claudeHarnessCheatsheet.refresh",
-        "title": "Claude Harness: 다시 스캔"
+        "command": "claudeCodeHarnessCheatsheet.refresh",
+        "title": "Claude Code Harness: 다시 스캔"
       },
       {
-        "command": "claudeHarnessCheatsheet.search",
-        "title": "Claude Harness: 검색 (Quick Pick)"
+        "command": "claudeCodeHarnessCheatsheet.search",
+        "title": "Claude Code Harness: 검색 (Quick Pick)"
       },
       {
-        "command": "claudeHarnessCheatsheet.lint",
-        "title": "Claude Harness: relates/author lint"
+        "command": "claudeCodeHarnessCheatsheet.lint",
+        "title": "Claude Code Harness: relates/author lint"
       }
     ],
     "keybindings": [
       {
-        "command": "claudeHarnessCheatsheet.toggle",
+        "command": "claudeCodeHarnessCheatsheet.toggle",
         "key": "ctrl+shift+h",
         "mac": "cmd+shift+h"
       },
       {
-        "command": "claudeHarnessCheatsheet.search",
+        "command": "claudeCodeHarnessCheatsheet.search",
         "key": "ctrl+shift+alt+h",
         "mac": "cmd+shift+alt+h"
       }
